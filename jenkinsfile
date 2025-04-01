@@ -1,8 +1,11 @@
 pipeline {
     agent any
+
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-hub-ahmedben')
+        SSH_CREDENTIALS = credentials('ssh-server') // Ajoute les credentials SSH dans Jenkins
     }
+
     stages {
         stage('SCM Checkout') {
             steps {
@@ -16,21 +19,64 @@ pipeline {
             }
         }
 
-    
-
- stage('Login to Docker Hub') {
-    steps {
-        script {
-            withCredentials([usernamePassword(credentialsId: 'docker-hub-ahmedben', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
-                bat """
-                    echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin
-                """
+        stage('Build & Test Backend') {
+            steps {
+                script {
+                    dir('DevProjOps/Backend') {
+                        bat 'npm install'
+                        bat 'npm test'
+                    }
+                }
             }
         }
-    }
-}
 
+        stage('Build Frontend (Flutter)') {
+            steps {
+                script {
+                    dir('DevProjOps/DevOpsFrnt') {
+                        bat 'flutter pub get'
+                        bat 'flutter build web'
+                    }
+                }
+            }
+        }
 
-    
-    }
-}
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    bat 'docker build -t ahmedabdelaziz5357580/backend:latest -f DevProjOps/Backend/Dockerfile DevProjOps/Backend'
+                    bat 'docker build -t ahmedabdelaziz5357580/frontend:latest -f DevProjOps/DevOpsFrnt/Dockerfile DevProjOps/DevOpsFrnt'
+                }
+            }
+        }
+
+        stage('Login to Docker Hub') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-ahmedben', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
+                        bat """
+                            echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Images to Docker Hub') {
+            steps {
+                script {
+                    // Push les images vers Docker Hub avec ton nom d'utilisateur DockerHub
+                    bat 'docker push ahmedabdelaziz5357580/backend:latest'
+                    bat 'docker push ahmedabdelaziz5357580/frontend:latest'
+                }
+            }
+        }
+
+        stage('Deploy on Remote Server via SSH') {
+            steps {
+                script {
+                    sshagent(['ssh-server']) {
+                        bat """
+                            // Se connecter au serveur distant et déployer les images Docker
+                            ssh -o StrictHostKeyChecking=no user@remote-server '
+                            docker pull ahmedabdelaziz535758
