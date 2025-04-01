@@ -6,16 +6,23 @@ pipeline {
     stages {
         stage('SCM Checkout') {
             steps {
-                git 'https://github.com/ahmedbenabdelaziz/DevProjOps.git'
+                script {
+                    // Clone le repo GitHub sur l'agent
+                    bat 'git clone https://github.com/ahmedbenabdelaziz/DevProjOps.git'
+                }
             }
         }
         stage('Login to Docker Hub') {
             steps {
                 script {
-                    sh 'docker login -u $DOCKERHUB_CREDENTIALS_USR -p $DOCKERHUB_CREDENTIALS_PSW'
+                    // Connexion à Docker Hub avec les identifiants
+                    bat '''
+                    set DOCKERHUB_CREDENTIALS_USR=%DOCKERHUB_CREDENTIALS_USR%
+                    set DOCKERHUB_CREDENTIALS_PSW=%DOCKERHUB_CREDENTIALS_PSW%
+                    docker login -u %DOCKERHUB_CREDENTIALS_USR% -p %DOCKERHUB_CREDENTIALS_PSW%
+                    '''
                 }
             }
         }
-    
     }
 }
