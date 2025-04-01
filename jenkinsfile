@@ -8,8 +8,10 @@ pipeline {
         stage('Login DockerHub') {
             steps {
                 script {
-                    // Exécution du script batch pour la connexion à DockerHub
-                    bat "docker_login.bat"
+                    // Connexion à DockerHub avec les variables d'environnement
+                    bat """
+                        docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                    """
                 }
             }
         }
