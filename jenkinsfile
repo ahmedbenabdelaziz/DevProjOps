@@ -1,75 +1,18 @@
 pipeline {
     agent any
-
     environment {
-        DOCKER_CREDENTIALS = 'finale-dockerhub'  // ID des credentials DockerHub
-        DOCKER_USER = 'ahmedabdelaziz5357580'   // Utilisateur DockerHub
-        FRONTEND_IMAGE = 'ahmedabdelaziz5357580/mon-flutter-app' // Image frontend
-        BACKEND_IMAGE = 'ahmedabdelaziz5357580/backend-app'       // Image backend
-        MYSQL_URL = 'http://localhost/phpmyadmin/index.php?route=/database/structure&db=db' // URL de phpMyAdmin
+        DOCKER_USER = 'ahmedabdelaziz5357580'  // Ton nom d'utilisateur DockerHub
+        DOCKER_PASS = credentials('finale-dockerhub') // Récupère ton mot de passe/token depuis Jenkins
     }
-
     stages {
-        stage('Checkout') {
+        stage('Login DockerHub') {
             steps {
                 script {
-                    git 'https://github.com/ahmedbenabdelaziz/DevProjOps.git'
+                    // Exécution du script batch pour la connexion à DockerHub
+                    bat "docker_login.bat"
                 }
             }
         }
-
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    dir('backend') {
-                        bat 'npm install'
-                    }
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Construire les images Docker pour frontend et backend
-                    bat "docker build -t $FRONTEND_IMAGE ./frontend"
-                    bat "docker build -t $BACKEND_IMAGE ./backend"
-                }
-            }
-        }
-
-        stage('Login to DockerHub') {
-            steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        bat "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                    }
-                }
-            }
-        }
-
-        stage('Push Docker Images') {
-            steps {
-                script {
-                    // Pousser les images sur DockerHub
-                    bat "docker push $FRONTEND_IMAGE"
-                    bat "docker push $BACKEND_IMAGE"
-                }
-            }
-        }
-
-       
-    }
-    
-    post {
-        always {
-            echo 'Pipeline terminé'
-        }
-        success {
-            echo 'Pipeline réussi !'
-        }
-        failure {
-            echo 'Le pipeline a échoué, vérifiez les logs.'
-        }
+        // Autres étapes de ton pipeline ici...
     }
 }
