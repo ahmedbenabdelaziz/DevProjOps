@@ -3,13 +3,14 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-hub-ahmedben')
+        FLUTTER_HOME = "C:\\Users\\LENOVO\\Downloads\\flutter_windows_3.29.2-stable\\flutter"
+        PATH = "${FLUTTER_HOME}\\bin;${env.PATH}"
     }
 
     stages {
         stage('SCM Checkout') {
             steps {
                 script {
-                    // Check if DevProjOps directory exists
                     if (!fileExists('DevProjOps')) {
                         echo 'Cloning DevProjOps repository...'
                         git 'https://github.com/ahmedbenabdelaziz/DevProjOps.git'
@@ -20,6 +21,15 @@ pipeline {
             }
         }
 
+        stage('Verify Flutter Installation') {
+            steps {
+                script {
+                    echo 'Vérification de l’installation de Flutter...'
+                    bat 'flutter --version'
+                    bat 'flutter doctor'
+                }
+            }
+        }
 
         stage('Build Frontend (Flutter)') {
             steps {
@@ -34,6 +44,5 @@ pipeline {
                 }
             }
         }
- 
     }
 }
