@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-hub-ahmedben')
-        SSH_CREDENTIALS = credentials('ssh-server') // Ajoute les credentials SSH dans Jenkins
     }
 
     stages {
