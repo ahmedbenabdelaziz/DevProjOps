@@ -7,22 +7,20 @@ pipeline {
         stage('SCM Checkout') {
             steps {
                 script {
-                    // Clone le repo GitHub sur l'agent
-                    bat 'git clone https://github.com/ahmedbenabdelaziz/DevProjOps.git'
+                    if (!fileExists('DevProjOps')) {
+                        git 'https://github.com/ahmedbenabdelaziz/DevProjOps.git'
+                    } else {
+                        echo 'Le répertoire DevProjOps existe déjà, saut de clonage.'
+                    }
                 }
             }
         }
-      stage('Login to Docker Hub') {
-    steps {
-        script {
-            withCredentials([usernamePassword(credentialsId: 'docker-hub-ahmed', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
-                bat """
-                    echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin
-                """
+        stage('Login to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-ahmed', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
+                    bat 'echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin'
+                }
             }
         }
-    }
-}
-
     }
 }
