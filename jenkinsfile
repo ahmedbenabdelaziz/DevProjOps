@@ -29,14 +29,14 @@ pipeline {
 
 
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    // Construction de l'image Docker
-                    bat "docker build -t $IMAGE_NAME:latest ." // Utilisation de la commande bat pour Windows
-                }
-            }
+    stage('Build Docker Image') {
+    steps {
+        script {
+            bat 'docker build -t ahmedabdelaziz5357580/backend-app:latest -f backend/Dockerfile .'
         }
+    }
+}
+
 
  
 
