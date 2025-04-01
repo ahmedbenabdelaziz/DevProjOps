@@ -1,0 +1,6 @@
+**/android
+**/ios
+**/.dart_tool
+**/.pub-cache
+**/build
+**/*.lock
