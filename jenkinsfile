@@ -20,19 +20,6 @@ pipeline {
             }
         }
 
-        stage('Build & Test Backend') {
-            steps {
-                script {
-                    dir('DevProjOps/Backend') {
-                        echo 'Installing backend dependencies...'
-                        bat 'npm install'
-                        
-                        echo 'Running backend tests...'
-                        bat 'npm test'
-                    }
-                }
-            }
-        }
 
         stage('Build Frontend (Flutter)') {
             steps {
@@ -47,42 +34,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Build Docker Images') {
-            steps {
-                script {
-                    echo 'Building backend Docker image...'
-                    bat 'docker build -t ahmedabdelaziz5357580/backend:latest -f DevProjOps/Backend/Dockerfile DevProjOps/Backend'
-
-                    echo 'Building frontend Docker image...'
-                    bat 'docker build -t ahmedabdelaziz5357580/frontend:latest -f DevProjOps/DevOpsFrnt/Dockerfile DevProjOps/DevOpsFrnt'
-                }
-            }
-        }
-
-        stage('Login to Docker Hub') {
-            steps {
-                script {
-                    echo 'Logging into Docker Hub...'
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub-ahmedben', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
-                        bat """
-                            echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Push Docker Images to Docker Hub') {
-            steps {
-                script {
-                    echo 'Pushing backend Docker image to Docker Hub...'
-                    bat 'docker push ahmedabdelaziz5357580/backend:latest'
-                    
-                    echo 'Pushing frontend Docker image to Docker Hub...'
-                    bat 'docker push ahmedabdelaziz5357580/frontend:latest'
-                }
-            }
-        }
+ 
     }
 }
