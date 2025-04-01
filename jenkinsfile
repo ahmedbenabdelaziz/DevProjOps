@@ -3,46 +3,65 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-hub-ahmedben')
-        FLUTTER_HOME = "C:\\Users\\LENOVO\\Downloads\\flutter_windows_3.29.2-stable\\flutter"
-        PATH = "${FLUTTER_HOME}\\bin;${env.PATH}"
+        GITHUB_REPO = 'https://github.com/ahmedbenabdelaziz/DevProjOps.git'
+        DOCKERHUB_USERNAME = 'ahmedabdelaziz5357580'
+        DOCKERHUB_REPO_BACKEND = 'backend-app'
+        DOCKERHUB_REPO_FRONTEND = 'mon-flutter-app'
+        PROJECT_DIR = 'DevProjOps'
     }
 
     stages {
         stage('SCM Checkout') {
             steps {
                 script {
-                    if (!fileExists('DevProjOps')) {
-                        echo 'Cloning DevProjOps repository...'
-                        git 'https://github.com/ahmedbenabdelaziz/DevProjOps.git'
+                    if (!fileExists(PROJECT_DIR)) {
+                        echo 'Cloning repository...'
+                        bat "git clone -b main %GITHUB_REPO%"
                     } else {
-                        echo 'Le répertoire DevProjOps existe déjà, saut de clonage.'
+                        echo 'Le projet existe déjà, mise à jour...'
+                        dir(PROJECT_DIR) {
+                            bat "git pull origin main"
+                        }
                     }
                 }
             }
         }
 
-        stage('Verify Flutter Installation') {
+ 
+
+        stage('Build Docker Images') {
             steps {
                 script {
-                    echo 'Vérification de l’installation de Flutter...'
-                    bat 'flutter --version'
-                    bat 'flutter doctor'
+                    dir(PROJECT_DIR) {
+                        echo 'Construction des images Docker...'
+                        bat "docker build -t %DOCKERHUB_USERNAME%/%DOCKERHUB_REPO_BACKEND% backend/"
+                        bat "docker build -t %DOCKERHUB_USERNAME%/%DOCKERHUB_REPO_FRONTEND% frontend/"
+                    }
                 }
             }
         }
 
-        stage('Build Frontend (Flutter)') {
+        stage('Push to DockerHub') {
             steps {
                 script {
-                    dir('DevProjOps/DevOpsFrnt') {
-                        echo 'Fetching frontend dependencies...'
-                        bat 'flutter pub get'
-                        
-                        echo 'Building Flutter web app...'
-                        bat 'flutter build web'
-                    }
+                    echo 'Connexion à DockerHub...'
+                    bat "docker login -u %DOCKERHUB_USERNAME% -p %DOCKERHUB_CREDENTIALS_PSW%"
+
+                    echo 'Push des images...'
+                    bat "docker push %DOCKERHUB_USERNAME%/%DOCKERHUB_REPO_BACKEND%"
+                    bat "docker push %DOCKERHUB_USERNAME%/%DOCKERHUB_REPO_FRONTEND%"
                 }
             }
         }
     }
+
+    post {
+        success {
+            echo '🚀 Déploiement réussi !'
+        }
+        failure {
+            echo '❌ Échec du pipeline !'
+        }
+    }
 }
+
