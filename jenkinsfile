@@ -58,17 +58,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to Remote Server') {
-            steps {
-                script {
-                    // Si tu as des étapes SSH pour déployer, tu peux les ajouter ici.
-                    // Exemple de commande pour déployer via SSH
-                    // sshagent(['your-ssh-credentials-id']) {
-                    //     sh 'ssh user@remote-server "docker pull $FRONTEND_IMAGE && docker pull $BACKEND_IMAGE && docker-compose up -d"'
-                    // }
-                }
-            }
-        }
+       
     }
     
     post {
