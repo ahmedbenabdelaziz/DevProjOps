@@ -16,7 +16,7 @@ pipeline {
                 script {
                     if (!fileExists(PROJECT_DIR)) {
                         echo 'Cloning repository...'
-                        bat "git clone -b main %GITHUB_REPO%"
+                        bat "git clone -b main ${GITHUB_REPO}"
                     } else {
                         echo 'Le projet existe déjà, mise à jour...'
                         dir(PROJECT_DIR) {
@@ -27,15 +27,13 @@ pipeline {
             }
         }
 
- 
-
         stage('Build Docker Images') {
             steps {
                 script {
                     dir(PROJECT_DIR) {
                         echo 'Construction des images Docker...'
-                        bat "docker build -t %DOCKERHUB_USERNAME%/%DOCKERHUB_REPO_BACKEND% backend/"
-                        bat "docker build -t %DOCKERHUB_USERNAME%/%DOCKERHUB_REPO_FRONTEND% frontend/"
+                        bat "docker build -t ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO_BACKEND} backend/"
+                        bat "docker build -t ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO_FRONTEND} frontend/"
                     }
                 }
             }
@@ -45,11 +43,11 @@ pipeline {
             steps {
                 script {
                     echo 'Connexion à DockerHub...'
-                    bat "docker login -u %DOCKERHUB_USERNAME% -p %DOCKERHUB_CREDENTIALS_PSW%"
+                    bat "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_CREDENTIALS_PSW}"
 
                     echo 'Push des images...'
-                    bat "docker push %DOCKERHUB_USERNAME%/%DOCKERHUB_REPO_BACKEND%"
-                    bat "docker push %DOCKERHUB_USERNAME%/%DOCKERHUB_REPO_FRONTEND%"
+                    bat "docker push ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO_BACKEND}"
+                    bat "docker push ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO_FRONTEND}"
                 }
             }
         }
