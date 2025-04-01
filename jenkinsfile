@@ -79,4 +79,14 @@ pipeline {
                         bat """
                             // Se connecter au serveur distant et déployer les images Docker
                             ssh -o StrictHostKeyChecking=no user@remote-server '
-                            docker pull ahmedabdelaziz535758
+                            docker pull ahmedabdelaziz5357580/backend:latest &&
+                            docker pull ahmedabdelaziz5357580/frontend:latest &&
+                            docker-compose -f /home/user/docker-compose.yml up -d
+                            '
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
