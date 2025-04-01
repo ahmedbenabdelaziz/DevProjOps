@@ -12,19 +12,32 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/ahmedbenabdelaziz/DevProjOps.git'
+                script {
+                    git 'https://github.com/ahmedbenabdelaziz/DevProjOps.git'
+                }
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                dir('backend') {
-                    bat 'npm install'
+                script {
+                    dir('backend') {
+                        bat 'npm install'
+                    }
                 }
             }
         }
 
-       
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Construire les images Docker pour frontend et backend
+                    bat "docker build -t $FRONTEND_IMAGE ./frontend"
+                    bat "docker build -t $BACKEND_IMAGE ./backend"
+                }
+            }
+        }
+
         stage('Login to DockerHub') {
             steps {
                 script {
@@ -57,6 +70,7 @@ pipeline {
             }
         }
     }
+    
     post {
         always {
             echo 'Pipeline terminé'
