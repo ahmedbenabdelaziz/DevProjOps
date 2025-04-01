@@ -2,57 +2,70 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_CREDENTIALS = 'finale-dockerhub'
-        IMAGE_NAME = 'ahmedabdelaziz5357580/backend-app'
+        DOCKER_CREDENTIALS = 'finale-dockerhub'  // ID des credentials DockerHub
+        DOCKER_USER = 'ahmedabdelaziz5357580'   // Utilisateur DockerHub
+        FRONTEND_IMAGE = 'ahmedabdelaziz5357580/mon-flutter-app' // Image frontend
+        BACKEND_IMAGE = 'ahmedabdelaziz5357580/backend-app'       // Image backend
+        MYSQL_URL = 'http://localhost/phpmyadmin/index.php?route=/database/structure&db=db' // URL de phpMyAdmin
     }
 
     stages {
         stage('Checkout') {
             steps {
-                script {
-                    // Effectuer le checkout du dépôt Git
-                    git url: 'https://github.com/ahmedbenabdelaziz/DevProjOps.git', branch: 'main'
-                }
+                git 'https://github.com/ahmedbenabdelaziz/DevProjOps.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
+                dir('backend') {
+                    bat 'npm install'
+                }
+            }
+        }
+
+       
+        stage('Login to DockerHub') {
+            steps {
                 script {
-                    // Naviguer dans le dossier backend pour installer les dépendances
-                    dir('backend') {
-                        bat 'npm install' // Utilisation de la commande bat pour Windows
+                    withCredentials([usernamePassword(credentialsId: DOCKER_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        bat "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                     }
                 }
             }
         }
 
+        stage('Push Docker Images') {
+            steps {
+                script {
+                    // Pousser les images sur DockerHub
+                    bat "docker push $FRONTEND_IMAGE"
+                    bat "docker push $BACKEND_IMAGE"
+                }
+            }
+        }
 
-
-    stage('Build Docker Image') {
-    steps {
-        script {
-            bat 'docker build -t ahmedabdelaziz5357580/backend-app:latest -f backend/Dockerfile .'
+        stage('Deploy to Remote Server') {
+            steps {
+                script {
+                    // Si tu as des étapes SSH pour déployer, tu peux les ajouter ici.
+                    // Exemple de commande pour déployer via SSH
+                    // sshagent(['your-ssh-credentials-id']) {
+                    //     sh 'ssh user@remote-server "docker pull $FRONTEND_IMAGE && docker pull $BACKEND_IMAGE && docker-compose up -d"'
+                    // }
+                }
+            }
         }
     }
-}
-
-
- 
-
-   
-    }
-
     post {
+        always {
+            echo 'Pipeline terminé'
+        }
         success {
-            // Affichage d'un message en cas de succès
-            echo "✅ Pipeline exécuté avec succès !"
+            echo 'Pipeline réussi !'
         }
         failure {
-            // Affichage d'un message en cas d'échec
-            echo "❌ Échec du pipeline ! Vérifie les logs."
+            echo 'Le pipeline a échoué, vérifiez les logs.'
         }
     }
 }
-
-          
