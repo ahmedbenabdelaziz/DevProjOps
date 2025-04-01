@@ -2,13 +2,13 @@ pipeline {
     agent any
     environment {
         DOCKER_USER = 'ahmedabdelaziz5357580'  // Ton nom d'utilisateur DockerHub
-        DOCKER_PASS = credentials('finale-dockerhub') // Récupère ton mot de passe/token depuis Jenkins
+        DOCKER_PASS = credentials('docker-hub-ahmed')  // Utilisation des credentials Jenkins
     }
     stages {
         stage('Login DockerHub') {
             steps {
                 script {
-                    // Connexion à DockerHub en utilisant --password-stdin
+                    // Connexion à DockerHub en utilisant les credentials de Jenkins
                     bat """
                         echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
                     """
