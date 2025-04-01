@@ -8,9 +8,9 @@ pipeline {
         stage('Login DockerHub') {
             steps {
                 script {
-                    // Connexion à DockerHub avec les variables d'environnement
+                    // Connexion à DockerHub en utilisant --password-stdin
                     bat """
-                        docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
                     """
                 }
             }
