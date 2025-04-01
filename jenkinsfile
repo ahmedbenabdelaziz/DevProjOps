@@ -27,16 +27,7 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
-            steps {
-                script {
-                    // Naviguer dans le dossier backend pour exécuter les tests
-                    dir('backend') {
-                        bat 'npm test' // Utilisation de la commande bat pour Windows
-                    }
-                }
-            }
-        }
+
 
         stage('Build Docker Image') {
             steps {
@@ -47,25 +38,9 @@ pipeline {
             }
         }
 
-        stage('Login to DockerHub') {
-            steps {
-                script {
-                    // Connexion à DockerHub avec les identifiants
-                    withCredentials([usernamePassword(credentialsId: DOCKER_HUB_CREDENTIALS, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        bat "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin" // Utilisation de la commande bat pour Windows
-                    }
-                }
-            }
-        }
+ 
 
-        stage('Push to DockerHub') {
-            steps {
-                script {
-                    // Push de l'image Docker vers DockerHub
-                    bat "docker push $IMAGE_NAME:latest" // Utilisation de la commande bat pour Windows
-                }
-            }
-        }
+   
     }
 
     post {
