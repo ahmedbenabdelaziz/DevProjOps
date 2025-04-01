@@ -9,7 +9,9 @@ pipeline {
         stage('SCM Checkout') {
             steps {
                 script {
+                    // Check if DevProjOps directory exists
                     if (!fileExists('DevProjOps')) {
+                        echo 'Cloning DevProjOps repository...'
                         git 'https://github.com/ahmedbenabdelaziz/DevProjOps.git'
                     } else {
                         echo 'Le répertoire DevProjOps existe déjà, saut de clonage.'
@@ -22,7 +24,10 @@ pipeline {
             steps {
                 script {
                     dir('DevProjOps/Backend') {
+                        echo 'Installing backend dependencies...'
                         bat 'npm install'
+                        
+                        echo 'Running backend tests...'
                         bat 'npm test'
                     }
                 }
@@ -33,7 +38,10 @@ pipeline {
             steps {
                 script {
                     dir('DevProjOps/DevOpsFrnt') {
+                        echo 'Fetching frontend dependencies...'
                         bat 'flutter pub get'
+                        
+                        echo 'Building Flutter web app...'
                         bat 'flutter build web'
                     }
                 }
@@ -43,7 +51,10 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
+                    echo 'Building backend Docker image...'
                     bat 'docker build -t ahmedabdelaziz5357580/backend:latest -f DevProjOps/Backend/Dockerfile DevProjOps/Backend'
+
+                    echo 'Building frontend Docker image...'
                     bat 'docker build -t ahmedabdelaziz5357580/frontend:latest -f DevProjOps/DevOpsFrnt/Dockerfile DevProjOps/DevOpsFrnt'
                 }
             }
@@ -52,6 +63,7 @@ pipeline {
         stage('Login to Docker Hub') {
             steps {
                 script {
+                    echo 'Logging into Docker Hub...'
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-ahmedben', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
                         bat """
                             echo %DOCKERHUB_CREDENTIALS_PSW% | docker login -u %DOCKERHUB_CREDENTIALS_USR% --password-stdin
@@ -64,26 +76,11 @@ pipeline {
         stage('Push Docker Images to Docker Hub') {
             steps {
                 script {
-                    // Push les images vers Docker Hub avec ton nom d'utilisateur DockerHub
+                    echo 'Pushing backend Docker image to Docker Hub...'
                     bat 'docker push ahmedabdelaziz5357580/backend:latest'
+                    
+                    echo 'Pushing frontend Docker image to Docker Hub...'
                     bat 'docker push ahmedabdelaziz5357580/frontend:latest'
-                }
-            }
-        }
-
-        stage('Deploy on Remote Server via SSH') {
-            steps {
-                script {
-                    sshagent(['ssh-server']) {
-                        bat """
-                            // Se connecter au serveur distant et déployer les images Docker
-                            ssh -o StrictHostKeyChecking=no user@remote-server '
-                            docker pull ahmedabdelaziz5357580/backend:latest &&
-                            docker pull ahmedabdelaziz5357580/frontend:latest &&
-                            docker-compose -f /home/user/docker-compose.yml up -d
-                            '
-                        """
-                    }
                 }
             }
         }
