@@ -33,7 +33,7 @@ pipeline {
                     dir(PROJECT_DIR) {
                         echo 'Construction des images Docker...'
                         bat "docker build -t ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO_BACKEND} backend/"
-                        bat "docker build -t ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO_FRONTEND} frontend/"
+                        bat "docker build -t ${DOCKERHUB_USERNAME}/${DOCKERHUB_REPO_FRONTEND} devopsfrnt/"
                     }
                 }
             }
